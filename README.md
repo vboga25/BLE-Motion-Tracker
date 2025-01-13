@@ -43,7 +43,7 @@ The program will:
 
 ### **3. Accelerometer Data Parsing**
 - Processes packets matching the accelerometer broadcast prefix (`0x0201060303E1FF1216E1FF`).
-- Extracts data between offsets `28:39`, representing the X, Y, and Z axes in 8.8 fixed-point format.
+- Extracts appropriate data, representing the X, Y, and Z axes in 8.8 fixed-point format.
 - Converts hex data into signed decimal format.
 
 ### **4. Motion Detection**

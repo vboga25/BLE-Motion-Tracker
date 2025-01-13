@@ -9,6 +9,7 @@ async def scan_ble_devices():                   #scan for BLE devices and print 
 if __name__ == "__main__":
     asyncio.run(scan_ble_devices())
 
+
 def fixed_point_to_decimal(hex_value):
     value = int(hex_value, 16)                  # Convert hex to 16-bit integer
     if value & 0x8000:                          # Check if number is negative (first bit is 1)
@@ -20,7 +21,7 @@ def fixed_point_to_decimal(hex_value):
 def parse_accelerometer_data(packet):
     try:
         if packet.startswith("0x0201060303E1FF1216E1FF"):  # Accelerometer frame prefix
-            accel_data = packet[28:39]  # Extract accelerometer data 
+            accel_data = packet[28:40]  # Extract accelerometer data from 28th to 39th half-byte
 
             # Extract x, y, z raw data
             x_raw = int(accel_data[0:3], 16)
@@ -37,3 +38,15 @@ def parse_accelerometer_data(packet):
     except Exception as e:
         print(f"Error parsing accelerometer data: {e}")
     return None
+
+# Parse iBeacon Data
+def parse_ibeacon_data(packet):
+    try:
+        if packet.startswith("0x0201061AFF4C000215"):  # iBeacon frame prefix
+            uuid = packet[18:50]  # Extract UUID from 18th to 49th half-byte
+            print(f"Parsed iBeacon UUID: {uuid}")
+            return True
+        return False
+    except Exception as e:
+        print(f"Error parsing iBeacon data: {e}")
+        return False

@@ -1,13 +1,28 @@
 import asyncio
 from bleak import BleakScanner
 
-async def scan_ble_devices():                   #scan for BLE devices and print addresses
-    devices = await BleakScanner.discover()
-    for device in devices:
-        print(f"Device: {device.name}, MAC Address: {device.address}")
+# Main BLE Scanner Logic
+async def main(scan_duration):
+    print("Scanning for BLE devices...")
+    try:
+        devices = await BleakScanner.discover()
+        prev_accel = (0.0, 0.0, 0.0)  # Initialize previous accelerometer values
+
+        for device in devices:
+            print(f"Device: {device.address}, Name: {device.name}")
+            # Example packet for demonstration
+            packet = "0x0201060303E1FF1216E1FFA10364FFF4000FFF003772A33F23AC"
+            if parse_ibeacon_data(packet):  # Check if it's an iBeacon packet
+                curr_accel = parse_accelerometer_data(packet)  # Extract accelerometer data
+                if curr_accel:
+                    detect_motion(prev_accel, curr_accel)
+                    prev_accel = curr_accel  # Update previous accelerometer values
+    except Exception as e:
+        print(f"Error: {e}")
 
 if __name__ == "__main__":
-    asyncio.run(scan_ble_devices())
+    scan_duration = 5  # Example duration in seconds
+    asyncio.run(main(scan_duration))
 
 
 def fixed_point_to_decimal(hex_value):
@@ -50,3 +65,23 @@ def parse_ibeacon_data(packet):
     except Exception as e:
         print(f"Error parsing iBeacon data: {e}")
         return False
+
+
+# Detect Motion Based on Accelerometer Data
+def detect_motion(prev_accel, curr_accel, threshold=0.5):
+    try:
+        # Calculate differences between successive accelerometer values
+        diff_x = abs(curr_accel[0] - prev_accel[0])
+        diff_y = abs(curr_accel[1] - prev_accel[1])
+        diff_z = abs(curr_accel[2] - prev_accel[2])
+
+        # Check if the difference exceeds the threshold on any axis
+        if diff_x > threshold or diff_y > threshold or diff_z > threshold:
+            print(f"Device is moving. Differences - X: {diff_x}, Y: {diff_y}, Z: {diff_z}")
+            return True
+        else:
+            print(f"Device is stationary. Differences - X: {diff_x}, Y: {diff_y}, Z: {diff_z}")
+            return False
+    except Exception as e:
+        print(f"Error detecting motion: {e}")
+    return False
